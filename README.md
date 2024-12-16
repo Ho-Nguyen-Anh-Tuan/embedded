@@ -2,7 +2,7 @@
 
 ## Unit 1: Blink LED
 
-Bài học này hướng dẫn cách điều khiển LED bằng cách thao tác trực tiếp trên các thanh ghi của vi điều khiển (MCU). Điều này giúp bạn hiểu rõ cách các ngoại vi hoạt động.
+Điều khiển LED bằng cách thao tác trực tiếp trên các thanh ghi của vi điều khiển (MCU).
 
 ---
 
@@ -62,7 +62,6 @@ Bài học này hướng dẫn cách điều khiển LED bằng cách thao tác 
 
 ### **4. Code mẫu**
 
-Dưới đây là chương trình đầy đủ để điều khiển LED:
 
 ```c
 #define RCC_APB2ENR *((unsigned int *)0x40021018)
@@ -96,7 +95,7 @@ int main(){
   - Tăng hiệu suất do thao tác trực tiếp trên thanh ghi.
 
 - **Nhược điểm:**
-  - Cách thực hiện khá phức tạp và đòi hỏi sự tỉ mỉ.
+  - Cách thực hiện khá phức tạp.
 
 ---
 
@@ -104,5 +103,63 @@ int main(){
 
 - **Mục đích:** Đơn giản hóa việc thao tác với các thanh ghi bằng cách sử dụng cấu trúc (`struct`).
 - **Nguyên tắc:**
-  - Địa chỉ của `struct` là địa chỉ của thành viên 
+  - Địa chỉ của `struct` là địa chỉ của thành viên đầu tiên, các thành viên tiếp theo ứng với cấu trúc thực tế của MCU.
+  #### Code:
+
+  
+```c
+  
+
+typedef struct{
+	unsigned int CR;
+	unsigned int CFGR;
+	unsigned int CIR;
+	unsigned int APB2RSTR;
+	unsigned int CAB1RSTR;
+	unsigned int AHBENR;
+	unsigned int APB2ENR;
+	unsigned int APB1ENR;
+	unsigned int BDCR;
+	unsigned int CSR;
+} RCC_typeDef;
+
+typedef struct{
+	unsigned int CRl;	//32bit = 4byte 0x00
+	unsigned int CRH; //0x04
+	unsigned int IDR;	//0x08
+	unsigned int ODR;
+	unsigned int BSRR;
+	unsigned int BRR;
+	unsigned int LCKR;
+} GPIO_typeDef;
+
+#define RCC		((RCC_typeDef *)0x40021000)
+#define GPIOC ((GPIO_typeDef *)0x40011000)
+#define GPIOA ((GPIO_typeDef *)0x40010800)
+
+void delay(unsigned int timeDelay){
+	for(unsigned int i = 0; i < timeDelay; i++){}
+}
+
+int main(){
+	
+	RCC->APB2ENR|= (1 << 4);	
+	GPIOC->CRH |= (3 << 20);		
+	GPIOC->CRH &= ~(3 << 22);
+	
+	while(1){
+		GPIOC->ODR |= (1 << 13);
+		delay(1000000);
+		GPIOC->ODR &= ~(1 << 13);
+		delay(1000000);
+	}
+	
+}
+```
+
+
+	
+}
+```
+  
 
