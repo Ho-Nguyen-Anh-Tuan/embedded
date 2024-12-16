@@ -1,4 +1,4 @@
-# Embedded 🔠
+# Embedded 💻
 
 ## Unit 1: Blink LED
 
