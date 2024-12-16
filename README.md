@@ -60,7 +60,7 @@
 
 ---
 
-### **4. Code mẫu**
+#### **Code mẫu**
 
 
 ```c
@@ -88,7 +88,7 @@ int main(){
 
 ---
 
-### **5. Ưu và nhược điểm**
+#### **Ưu và nhược điểm**
 
 - **Ưu điểm:**
   - Giúp hiểu rõ cách hoạt động của các ngoại vi.
@@ -99,7 +99,7 @@ int main(){
 
 ---
 
-### **6. Xây dựng cấu trúc thanh ghi**
+### **3.5 Xây dựng cấu trúc thanh ghi**
 
 - **Mục đích:** Đơn giản hóa việc thao tác với các thanh ghi bằng cách sử dụng cấu trúc (`struct`).
 - **Nguyên tắc:**
