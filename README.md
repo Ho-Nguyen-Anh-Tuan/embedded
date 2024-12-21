@@ -167,7 +167,7 @@ int main(){
 
 ## UNIT 2: GPIO
 
-### Điều khiển LED PC13 qua nút nhấn nối ở PA0 sử dụng thư viện SPL
+### Điều khiển LED PC13 qua nút nhấn nối ở PA0 
 
 #### **1. Bật xung clock cho ngoại vi**
 
