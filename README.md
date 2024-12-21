@@ -161,6 +161,100 @@ int main(){
 </p>
 </details>
 
+<details><summary>Unit 2: GPIO</summary>
+<p>
+
+
+## UNIT 2: GPIO
+
+### Điều khiển LED PC13 qua nút nhấn nối ở PA0 sử dụng thư viện SPL
+
+#### **1. Bật xung clock cho ngoại vi**
+
+- Cấp xung clock cho GPIOA và GPIOC thông qua thanh ghi APB2 bằng kỹ thuật bitmask.
+- Bật bit 4 và bit 2 của thanh ghi APB2.
+
+#### **2. Cấu hình chế độ chân**
+
+- Đối với PA0:
+  - Set MODE = `00` (input mode).
+  - Set CNF = `10` để chọn chế độ input pull-up/pull-down.
+  - Đặt ODR = `1` (input pull-up). Nếu ODR = `0`, chế độ sẽ là input pull-down.
+- Đối với PC13:
+  - Set MODE = `11` (output mode, max speed 50MHz).
+  - Set CNF = `00` (output push-pull).
+
+#### **3. Sử dụng ngoại vi**
+
+- Đọc mức điện áp từ thanh ghi `IDR` của GPIOA bằng phép AND để kiểm tra trạng thái của nút nhấn.
+- Dựa trên trạng thái đọc được:
+  - Nếu PA0 ở mức thấp, bật LED PC13.
+  - Nếu PA0 ở mức cao, tắt LED PC13.
+
+#### **Code ví dụ**
+
+```c
+typedef struct {
+    unsigned int CR;
+    unsigned int CFGR;
+    unsigned int CIR;
+    unsigned int APB2RSTR;
+    unsigned int APB1RSTR;
+    unsigned int AHBENR;
+    unsigned int APB2ENR;
+    unsigned int APB1ENR;
+    unsigned int BDCR;
+    unsigned int CSR;
+} RCC_typeDef;
+
+typedef struct {
+    unsigned int CRL;   // 0x00
+    unsigned int CRH;   // 0x04
+    unsigned int IDR;   // 0x08
+    unsigned int ODR;   // 0x0C
+    unsigned int BSRR;  // 0x10
+    unsigned int BRR;   // 0x14
+    unsigned int LCKR;  // 0x18
+} GPIO_typeDef;
+
+
+#define RCC     ((RCC_typeDef *)0x40021000)
+#define GPIOC   ((GPIO_typeDef *)0x40011000)
+#define GPIOA   ((GPIO_typeDef *)0x40010800)
+
+
+void delay(unsigned int timeDelay) {
+    for (unsigned int i = 0; i < timeDelay; i++) {}
+}
+
+int main() {
+    // Bật xung clock cho GPIOA và GPIOC
+    RCC->APB2ENR |= (1 << 4) | (1 << 2);
+
+    // Cấu hình PC13 làm output
+    GPIOC->CRH |= (3 << 20);       
+    GPIOC->CRH &= ~(3 << 22);      
+
+    // Cấu hình PA0 làm input pull-up
+    GPIOA->CRL |= (8);             // MODE0 = 00, CNF0 = 10 (input pull-up/pull-down)
+    GPIOA->ODR |= 1;               // Set ODR0 = 1 (pull-up)
+
+    while (1) {
+        if ((GPIOA->IDR & 1) == 0) { 
+            GPIOC->ODR |= (1 << 13); 
+        } else {
+            GPIOC->ODR &= ~(1 << 13); 
+        }
+    }
+}
+```
+
+
+
+</p>
+</details>
+
+
 	
 
   
