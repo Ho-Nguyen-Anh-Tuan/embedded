@@ -1,4 +1,6 @@
 # Embedded 💻
+<details><summary>Unit 1: Set up Keil and blink led</summary>
+<p>
 
 ## Unit 1: Blink LED
 
@@ -156,7 +158,8 @@ int main(){
 	
 }
 ```
-
+</p>
+</details>
 
 	
 
