@@ -2,7 +2,7 @@
 <details><summary>Unit 1: Set up Keil and blink led</summary>
 <p>
 
-## Unit 1: Blink LED
+## Unit 1: Set up Keil and blink led
 
 Điều khiển LED bằng cách thao tác trực tiếp trên các thanh ghi của vi điều khiển (MCU).
 
@@ -157,15 +157,7 @@ int main(){
 	}
 	
 }
-```
-</p>
-</details>
-
-<details><summary>Unit 2: GPIO</summary>
-<p>
-
-
-## UNIT 2: GPIO
+```  
 
 ### Điều khiển LED PC13 qua nút nhấn nối ở PA0 
 
@@ -249,13 +241,239 @@ int main() {
 }
 ```
 
+</p>
+</details>
+
+<details><summary>Unit 2: Cấu hình GPIO sử dụng thư viện SPL</summary>
+<p>
+	
+## Unit 2: Cấu hình GPIO sử dụng thư viện SPL
+
+### 1. Blink LED PC13
+
+#### 1. Cấp clock cho ngoại vi
+GPIOC nối với bus APB2, do đó sử dụng hàm `RCC_APB2PeriphClockCmd` để cấp clock.
+- Hàm nhận 2 tham số:
+  - Ngoại vi muốn cấp clock.
+  - Cho phép (ENABLE) hoặc không cho phép (DISABLE).
+
+#### 2. Cấu hình ngoại vi
+Thư viện SPL cung cấp struct `GPIO_InitTypeDef` với các thành viên:
+- `GPIO_Pin`: Chân GPIO muốn cấu hình.
+- `GPIO_Speed`: Tốc độ cho bộ GPIO hoạt động.
+- `GPIO_Mode`: Chế độ hoạt động.
+
+Chọn `GPIO_Pin_13`, output push-pull, max speed 50MHz. Sử dụng hàm `GPIO_Init` lưu cài đặt vào thanh ghi.
+
+#### 3. Sử dụng ngoại vi
+Dùng hàm `GPIO_SetBits` và `GPIO_ResetBits` để bật tắt LED, kết hợp với delay để nháy LED.
+
+### Code:
+```c
+#include "stm32f10x.h"      // Device header
+#include "stm32f10x_rcc.h"  // Device:StdPeriph Drivers:RCC
+#include "stm32f10x_gpio.h" // Device:StdPeriph Drivers:GPIO
+
+// Cấp xung cho GPIOC
+void RCC_Config() {
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+}
+
+// Cấu hình chân
+void GPIO_Config() {
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+
+    GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+
+void delay(unsigned int time) {
+    for (int i = 0; i < time; i++) {}
+}
+
+int main() {
+    RCC_Config();
+    GPIO_Config();
+
+    while (1) {
+        GPIO_SetBits(GPIOC, GPIO_Pin_13);
+        delay(1000000);
+        GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+        delay(1000000);
+    }
+}
+```
+
+---
+
+### 2. Chase LED
+
+#### 1. Cấp clock cho ngoại vi
+GPIOC chung bus APB2, việc cấp clock tương tự.
+
+#### 2. Cấu hình ngoại vi
+Sử dụng `GPIO_Pin_4`, `GPIO_Pin_5`, `GPIO_Pin_6`, `GPIO_Pin_7` cùng chế độ output push-pull, speed 50MHz. Vì bản chất các chân Pin là mask, nên khi ta muốn làm việc với nhiều chân
+chỉ cần | (OR) bọn nó với nhau.  
+Cài đặt xong lưu cài đặt bằng hàm `GPIO_Init`.
+
+#### 3. Sử dụng ngoại vi
+Viết hàm `chaseLed` bằng vòng lặp `for` + `shift bit` để tạo hiệu ứng nháy LED. Ghi giá trị vào thanh ghi `ODR` bằng hàm `GPIO_Write`.
+
+### Code:
+```c
+#include "stm32f10x.h"      // Device header
+#include "stm32f10x_rcc.h"  // Device:StdPeriph Drivers:RCC
+#include "stm32f10x_gpio.h" // Device:StdPeriph Drivers:GPIO
+
+// Cấp xung cho GPIOC
+void RCC_Config() {
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+}
+
+// Cấu hình chân
+void GPIO_Config() {
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+
+    GPIO_Init(GPIOC, &GPIO_InitStruct);
+}
+
+void delay(uint32_t time) {
+    for (uint32_t i = 0; i < time; i++) {}
+}
+
+void chaseLed(uint8_t loop) {
+    uint16_t Ledval;
+    for (int i = 0; i < loop; i++) {
+        Ledval = 0x0010; // 0b0001 0000
+        for (uint8_t j = 0; j < 4; j++) {
+            GPIO_Write(GPIOC, Ledval);
+            Ledval <<= 1;
+            delay(10000000);
+        }
+    }
+}
+
+int main() {
+    RCC_Config();
+    GPIO_Config();
+
+    while (1) {
+        chaseLed(4);
+        break;
+    }
+}
+```
+
+---
+
+### 3. Đọc nút nhấn PA0 - Xuất tín hiệu PC13
+
+#### 1. Cấp clock
+GPIOC và GPIOA chung đường bus APB2, khi dùng hàm cấp clock, | (OR) thêm GPIOA.
+
+#### 2. Cấu hình ngoại vi
+- Cài đặt Pin = GPIO_Pin_0, Mode input pull-up.
+- Lưu cài đặt vào GPIOA bằng hàm `GPIO_Init`.
+
+#### 3. Sử dụng ngoại vi
+Trong vòng lặp `while`, kiểm tra trạng thái nút nhấn bằng hàm `GPIO_ReadInputDataBit`. Khi nhấn, chờ nhả nút thả ra rồi thao tác với PC13.
+- Đọc giá trị từ PC13, nếu = 1 thì `ResetBits`, ngược lại thì `Setbits`.
+
+Code:  
+```c
+#include "stm32f10x.h"                  // Device header
+#include "stm32f10x_rcc.h"              // Device:StdPeriph Drivers:RCC
+#include "stm32f10x_gpio.h"             // Device:StdPeriph Drivers:GPIO
+
+// cap xung cho GPIOC
+void RCC_Config(){
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOA, ENABLE);
+}
+
+//cau hinh chan
+void GPIO_Config(){
+	GPIO_InitTypeDef GPIO_InitStruct;
+	
+	// cat dai pc13
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;		
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	
+	GPIO_Init(GPIOC, &GPIO_InitStruct);
+	
+	// cai dat pa0
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU;
+	
+	GPIO_Init(GPIOA, &GPIO_InitStruct);
+}	
+
+int main(){
+	RCC_Config();
+	GPIO_Config();
+	
+	while(1){
+		if(!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0)){
+			while(!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0));
+			if(GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13)){
+				GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+			} else{
+				GPIO_SetBits(GPIOC, GPIO_Pin_13);
+			}
+		}
+	}
+}
+
+```	
+
+</p>
+</details>
+
+<details><summary>Unit</summary>
+<p>
 
 
 </p>
 </details>
 
+<details><summary>Unit</summary>
+<p>
 
-	
 
-  
+</p>
+</details>
 
+<details><summary>Unit</summary>
+<p>
+
+
+</p>
+</details>
+
+<details><summary>Unit</summary>
+<p>
+
+
+</p>
+</details>
+
+<details><summary>Unit</summary>
+<p>
+
+
+</p>
+</details>
+
+<details><summary>Unit</summary>
+<p>
+
+
+</p>
+</details>
