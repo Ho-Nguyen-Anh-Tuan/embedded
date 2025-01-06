@@ -436,8 +436,73 @@ int main(){
 </p>
 </details>
 
-<details><summary>Unit</summary>
+<details><summary>Unit 3: Interupt - Timer</summary>
 <p>
+
+## Unit 3: Interrupt - Timer
+
+### 1.1 Định nghĩa ngắt
+Ngắt là một sự kiện khẩn cấp xảy ra bên trong hoặc bên ngoài MCU. Khi xảy ra, MCU sẽ tạm dừng chương trình chính để thực thi chương trình ngắt (trình phục vụ ngắt - ISR).
+
+### 1.2 Các ngắt thông dụng
+- Mỗi ngắt có một trình phục vụ ngắt riêng (ISR), tức là mỗi loại sự kiện ngắt sẽ có một ISR cụ thể.
+- Trình phục vụ ngắt (Interrupt Service Routine - ISR) là một đoạn chương trình được thực hiện khi ngắt xảy ra.
+- Mỗi ISR sẽ có một địa chỉ bắt đầu trong bộ nhớ, được gọi là **vector ngắt**.
+
+  ![Bai3](https://github.com/user-attachments/assets/157b6bc2-9b9e-4097-9b00-587e2a5d6e4a)
+
+
+- Mỗi ngắt có 1 vector ngắt (ISR)  
+- Cờ ngắt là tác nhân gây ra sự kiện ngắt
+###  VD: 
+Khi IE0 = 1, mcu sẽ biết có 1 ngắt ngoài xảy ra thì nó sẽ chạy đến ISR ngắt ngoài để thực thi.  
+**PC (Program ccounter)** là thanh ghi luôn chỉ đến lệnh tiếp theo của chương trình.  
+![Bai3 1](https://github.com/user-attachments/assets/2431301c-3ee8-4154-8d1f-fb2a83579b9d)
+
+
+#### Hoạt động của PC và MSP:
+- Khi chương trình chính đang thực thi, nếu xảy ra ngắt, PC (Program Counter) sẽ lưu lại địa chỉ lệnh tiếp theo và nhảy đến địa chỉ của ISR.
+- Sau khi ISR kết thúc, PC sẽ lấy lại địa chỉ từ MSP (Main Stack Pointer) và tiếp tục thực thi chương trình chính.
+
+### 1.2.1 Ngắt ngoài
+Xảy ra khi có sự thay đổi điện áp ở chân GPIO được cấu hình làm ngõ vào ngắt. Có bốn dạng:
+- **Low:** Kích hoạt ngắt liên tục khi chân ở mức 0.
+- **High:** Kích hoạt ngắt liên tục khi chân ở mức 1.
+- **Rising:** Kích hoạt khi có xung cạnh lên.
+- **Falling:** Kích hoạt khi có xung cạnh xuống.
+
+### 1.2.2 Ngắt Timer
+Xảy ra khi giá trị trong thanh ghi đếm của Timer bị tràn. Sau mỗi lần tràn, cần reset giá trị thanh ghi để tạo ngắt tiếp theo.
+- **Up counter:** Đếm lên.
+- **Down counter:** Đếm xuống.
+
+### 1.2.3 Ngắt truyền thông
+Xảy ra khi có sự kiện truyền/nhận dữ liệu giữa MCU và các thiết bị khác, thường dùng cho các giao thức như UART, SPI, I2C để đảm bảo dữ liệu chính xác.
+
+### 1.3 Độ ưu tiên ngắt
+- Ngắt có độ ưu tiên cao hơn sẽ được thực thi trước, ngắt có độ ưu tiên thấp hơn sẽ chờ.
+- Trên STM32, ngắt có số ưu tiên càng thấp thì quyền càng cao.
+- Stack Pointer lưu địa chỉ của chương trình chính hoặc ISR đang thực thi dở khi xảy ra ngắt.
+
+### 2. Timer
+Timer là một mạch digital logic có vai trò đếm các chu kỳ xung clock, có thể đếm lên hoặc đếm xuống.
+
+#### Ứng dụng của Timer:
+1. **Đếm sự kiện:** Mỗi sự kiện là một chu kỳ xung clock.
+2. **Delay:**
+   - Sử dụng struct `TIM_TimeBaseInitTypeDef` để cấu hình:
+     - `TIM_ClockDivision`: Chia tần số từ hệ thống thành các xung clock có tần số nhỏ hơn.
+     - `TIM_Prescaler`: bao nhiêu chu kì xung clock mới đếm lên 1 lần, từ đây ta quyết định 1 lần đếm tốn bao nhiêu s.
+     - `TIM_Period`: Bao nhiêu lần đếm thì timer tràn.
+     - `TIM_CounterMode`: Chế độ đếm (lên hoặc xuống).
+   - Gọi hàm `TIM_TimeBaseInit` để lưu cài đặt vào thanh ghi.
+   - Hàm `TIM_Cmd` dùng để bật/tắt Timer.
+   - Sử dụng hàm `SetCounter` để đặt giá trị đếm ban đầu và `GetCounter` để lấy giá trị đếm hiện tại.
+
+#### Các chế độ đếm:
+- **Up:** Từ 0 đến giá trị `Period`.
+- **Down:** Từ giá trị `Period` về 0.
+
 
 
 </p>
