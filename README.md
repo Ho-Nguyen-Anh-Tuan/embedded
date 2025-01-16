@@ -620,8 +620,8 @@ Khi mà nó muốn điều khiển thì kéo đường dây `= 0`, khi không đ
  ##### Even parity (chẵn):
  - Số bit `1` trong dữ liệu (bao gồm cả parity bit) luôn là **chẵn**.
  - Nếu số bit 1 trong dữ liệu là **lẻ**, parity bit sẽ được set thành `1` để **tổng số bit 1 là _chẵn_**.
- - Nếu số bit 1 trong dữ liệu **đã chẵn**, parity bit sẽ là `0`.
-vd: 
+ - Nếu số bit 1 trong dữ liệu **đã chẵn**, parity bit sẽ là `0`.  
+#### VD
 data | parity bit | truyền đi (data + parity)|
 |----|------------|----------|
 1010 |  0	  |  10100 |
