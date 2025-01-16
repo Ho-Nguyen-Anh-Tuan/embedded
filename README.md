@@ -508,7 +508,7 @@ Timer là một mạch digital logic có vai trò đếm các chu kỳ xung cloc
 </p>
 </details>
 
-<details><summary>Unit4: Communication Protocal</summary>
+<details><summary>Unit 4: Communication Protocal</summary>
 <p>
 
 ## Unit 4: Communication Protocol
@@ -608,7 +608,7 @@ Khi mà nó muốn điều khiển thì kéo đường dây `= 0`, khi không đ
 => Timer(0 -> 0.10417)
   2 thiết bị quyết định thời điểm gửi bằng timer
 
-#### Quá trình hoạt động:
+#### Quá trình hoạt động: Tuy UART không có đường dây đồng bộ nhưng cũng dựa theo cơ chế _truyền - ngắt_ tương tự như SPI hay I2C. 
 1. Bên nào muốn gửi thì tạo 1 **start bit** (đưa Tx: `1->0`), sau đó delay khoảng thời gian 1 bit (0.10417 ms).
 
 2. `if (Rx == 1)` dùng để liên tục kiểm tra Tx của MCU A, khi MCU A thực hiện delay thì MCU B cũng thực delay với cùng 1 khoảng thời gian. Lúc này tín hiệu `Tx = 0` của MCU A đã ổn định, MCU B đọc Rx của nó thì thấy đã có bit start thì bắt đầu truyền dữ liệu.  
