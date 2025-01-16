@@ -610,12 +610,14 @@ Khi mà nó muốn điều khiển thì kéo đường dây `= 0`, khi không đ
 
 #### Quá trình hoạt động:
 1. Bên nào muốn gửi thì tạo 1 **start bit** (đưa Tx: `1->0`), sau đó delay khoảng thời gian 1 bit (0.10417 ms).
-![slide19](https://github.com/user-attachments/assets/e55ea27c-8c5a-447c-a1fd-e681a638af7d)
-2. `if (Rx == 1)` dùng để liên tục kiểm tra Tx của MCU A, khi MCU A thực hiện delay thì MCU B cũng thực delay với cùng 1 khoảng thời gian. Lúc này tín hiệu `Tx = 0` của MCU A đã ổn định, MCU B đọc Rx của nó thì thấy đã có bit start thì bắt đầu truyền dữ liệu.  
 
-3. Ở MCU A, gán bit thấp nhất (LSB) cho Tx A, sau đó dịch data qua phải để sẵn sàng truyền bit kế. Lặp lại truyền và delay cho đến khi đủ 8 bit data. MCU B khi nhận bit start thì delay 0.1ms để chờ data. Đọc từ Rx B, nếu `Rx = 1` thì `arr |= mask byte`, xong thì dịch mask byte qua trái và delay chờ bit tiếp theo.
+2. `if (Rx == 1)` dùng để liên tục kiểm tra Tx của MCU A, khi MCU A thực hiện delay thì MCU B cũng thực delay với cùng 1 khoảng thời gian. Lúc này tín hiệu `Tx = 0` của MCU A đã ổn định, MCU B đọc Rx của nó thì thấy đã có bit start thì bắt đầu truyền dữ liệu.  
+![slide19](https://github.com/user-attachments/assets/e55ea27c-8c5a-447c-a1fd-e681a638af7d) 
+3. Ở MCU A, gán bit thấp nhất (LSB) cho Tx A, sau đó dịch data qua phải để sẵn sàng truyền bit kế. Lặp lại truyền và delay cho đến khi đủ 8 bit data.
+
+4. MCU B khi nhận bit start thì delay 0.1ms để chờ data. Đọc từ Rx B, nếu `Rx = 1` thì `arr |= mask byte`, xong thì dịch mask byte qua trái và delay chờ bit tiếp theo.
 ![slide20](https://github.com/user-attachments/assets/f952a088-9c12-46b4-a261-e1ddc9f7bbfb)
-4. **Parity** dùng để kiểm tra lỗi trong UART, theo cơ chế đếm số bit 1 trong dữ liệu truyền đi (data + parity).
+5. **Parity** dùng để kiểm tra lỗi trong UART, theo cơ chế đếm số bit 1 trong dữ liệu truyền đi (data + parity).
 #### Có 2 loại
  ##### Even parity (chẵn):
  - Số bit `1` trong dữ liệu (bao gồm cả parity bit) luôn là **chẵn**.
@@ -641,7 +643,7 @@ Bên gửi sẽ thêm parity tùy theo cài đặt vào data và truyền đi. B
 
 ***Nhược điểm***: Không phát hiện được lỗi nhiều bit.
 
-5. **Stop bit** tùy cấu hình 1-2 stop bits, MCU A đưa Tx: `0->1` xong delay thời gian 1 bit. MCU B đọc Rx, delay chờ Rx ổn định rồi khi thấy Rx = 1 thì tiến hành stop.
+5. **Stop bit** tùy cấu hình 1-2 stop bits, MCU A đưa Tx: `0->1` xong delay thời gian 1 bit. MCU B đọc Rx, delay chờ Rx ổn định rồi khi thấy `Rx = 1` thì tiến hành stop.
 ![slide22](https://github.com/user-attachments/assets/6c5dc65a-0b05-4226-ae9c-a11c39eaf40d)
 
 ---
