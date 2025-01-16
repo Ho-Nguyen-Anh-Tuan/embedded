@@ -508,8 +508,143 @@ Timer là một mạch digital logic có vai trò đếm các chu kỳ xung cloc
 </p>
 </details>
 
-<details><summary>Unit</summary>
+<details><summary>Unit4: Communication Protocal</summary>
 <p>
+
+## Unit 4: Communication Protocol
+
+### 1. Truyền nhận dữ liệu
+Là quá trình trao đổi tín hiệu điện áp giữa các chân MCU. Khi MCU A truyền dữ liệu cho MCU B, dữ liệu này sẽ được chuyển đổi thành tín hiệu điện áp trên các chân tương ứng.
+
+- **Vấn đề**: Các bit giống nhau liền kề -> các chuẩn giao tiếp.
+- **Chuẩn giao tiếp**: Thống nhất thời điểm 2 MCU bên đọc - bên nhận.
+
+#### Các kiểu giao tiếp:
+- **Đơn công**: 1 thiết bị chỉ thực hiện *1 nhiệm vụ duy nhất* (truyền hoặc nhận).
+- **Bán song công**: Tại 1 thời điểm, thiết bị chỉ thực hiện *truyền hoặc nhận*.
+- **Song công**: Vừa _nhận vừa truyền cùng lúc_.
+
+#### Chuẩn giao tiếp:
+- **Song song**: 8 đường dây - mỗi dây truyền 1 bit -> truyền 8 bit 1 lần. Dùng khi yêu cầu về tốc độ.
+- **Nối tiếp**: 1 đường dây để truyền tín hiệu, các bit lần lượt truyền trên 1 đường dây.
+- **Đồng bộ**: Thống nhất thời điểm 1 thiết bị truyền - 1 thiết bị nhận. Giữa 2 thiết bị có 1 đường dây trực tiếp để đồng bộ.
+
+---
+
+### 2. SPI (Serial Peripheral Interface)
+- Chuẩn giao tiếp nối tiếp.
+- Đồng bộ.
+- 1 master có thể kết nối với nhiều slave.
+
+#### Sử dụng 4 dây:
+1. **SCK (Serial Clock)**: Master cung cấp xung đồng bộ.
+2. **MISO (Master Input Slave Output)**: ***Master nhận*** dữ liệu từ slave.
+3. **MOSI (Master Output Slave Input)**: ***Master truyền*** dữ liệu cho slave.
+4. **SS/CS (Slave Select/Chip Select)**: Master chọn slave giao tiếp bằng cách kéo SS xuống mức `0`.  
+
+![slide6](https://github.com/user-attachments/assets/4dfa506a-5a6c-49d3-92cc-6d5275594957)
+
+
+#### Quá trình hoạt động:
+- Master kéo `CS = 0` để chọn slave.
+- CLock được cấp bởi master, với mỗi xung clock, 1 bit sẽ được master truyền cho slave và ngược lại.
+- Các thanh ghi cập nhật giá trị và dịch 1 bit.
+- Lập lại quá trình trên đến khi đủ 8 bit dữ liệu. Sau khi xong thì kéo chân `CS = 1`.  
+_Tại 1 thời điểm xung clock, SPI có thể cùng lúc truyền-nhận thông qua MOSI-MISO_.
+
+#### Chế độ hoạt động:
+1. **CPOL (Clock Polarity):**
+   - `0`: thời điểm **không truyền** dữ liệu (Idle) thì **SCK = 0** -> khi truyền SCK = 1.
+   - `1`: Thời điểm **không truyền** dữ liệu, **SCK = 1** -> khi truyền SCK = 0.
+2. **CPHA (Clock Phase):**
+   - `0`: **nhận** dữ liệu ở **cạnh thứ 1** của xung clock, **truyền** dữ liệu ở **cạnh thứ 2**.
+   - `1`: **nhận** dữ liệu ở **cạnh thứ 2** của xung clock, **truyền** dữ liệu ở **cạnh thứ 1**.
+
+![slide9](https://github.com/user-attachments/assets/21fa8007-e8cd-40c6-b21a-3af9b024f36f)
+
+---
+
+### 3. I2C (Inter-Integrated Circuit)
+- Chuẩn giao tiếp nối tiếp.
+- Đồng bộ.  
+- Chế độ bán song công.
+- 1 master kết nối với nhiều slave.
+
+#### Sử dụng 2 dây:
+1. **SCL (Serial Clock):** Tạo xung đồng bộ.
+2. **SDA (Serial Data):** Chân truyền dữ liệu.
+
+#### I2C hoạt động khá đặc biệt: Open drain
+Khi mà nó muốn điều khiển thì kéo đường dây `= 0`, khi không điều khiển thì thả trôi đường dây. Nên phải cần 2 con điện trở kéo lên nguồn để `= 1`.
+
+#### Quá trình hoạt động:
+1. Không truyền dữ liệu: Cả `SCL và SDA = 1`.
+2. Khi truyền cần 1 điều kiện bắt đầu (**start condition**): đưa `SDA = 0` *trước SCL*.
+3. Mỗi slave có 1 address riêng, **master gửi 8 bit đầu cho tất cả các slave**   (Call). 7 bit đầu là địa chỉ của slave mà master muốn giao tiếp, bit 8 để xác định đọc hay gửi dữ liệu cho slave (`gửi = 0`, `đọc = 1`).   
+4. **Bit ACK**: Bên nhận khi nhận thành công thì kéo `SDA = 0`. Trong 1 chu kì xung clock, bên gửi đọc SDA, nếu `= 0` thì truyền thành công, không thì truyền lại.  
+5. Sau khi xong 8 bit đầu thì truyền 8 bit data, sau mỗi 8 bit cũng là ACK.  
+6. Truyền xong dữ liệu thì tạo **stop condition**: đưa `SDA = 1` sau SCL .
+
+---
+
+### 4. UART (Universal Asynchronous Receiver-Transmitter)
+- Giao tiếp nối tiếp.
+- Không đồng bộ.
+- Chỉ 2 thiết bị giao tiếp bình đẳng.  
+- Chế độ song công.
+
+#### Sử dụng 2 dây:
+1. **Tx (Transmit):** Chân truyền dữ liệu.
+2. **Rx (Receive):** Chân nhận dữ liệu. 
+
+#### baudrate = số bit truyền được/1s
+##### VD: baudrate = 9600  
+
+| 9600 bits | 1000 ms|
+| ----------| --------- | 
+| 1 bit     | ? ms | 
+
+=> 0.10417 ms  
+=> Timer(0 -> 0.10417)
+  2 thiết bị quyết định thời điểm gửi bằng timer
+
+#### Quá trình hoạt động:
+1. Bên nào muốn gửi thì tạo 1 **start bit** (đưa Tx: `1->0`), sau đó delay khoảng thời gian 1 bit (0.10417 ms).
+![slide19](https://github.com/user-attachments/assets/e55ea27c-8c5a-447c-a1fd-e681a638af7d)
+2. `if (Rx == 1)` dùng để liên tục kiểm tra Tx của MCU A, khi MCU A thực hiện delay thì MCU B cũng thực delay với cùng 1 khoảng thời gian. Lúc này tín hiệu `Tx = 0` của MCU A đã ổn định, MCU B đọc Rx của nó thì thấy đã có bit start thì bắt đầu truyền dữ liệu.  
+
+3. Ở MCU A, gán bit thấp nhất (LSB) cho Tx A, sau đó dịch data qua phải để sẵn sàng truyền bit kế. Lặp lại truyền và delay cho đến khi đủ 8 bit data. MCU B khi nhận bit start thì delay 0.1ms để chờ data. Đọc từ Rx B, nếu = 1 thì arr |= mask byte, xong thì dịch mask byte qua trái và delay chờ bit tiếp theo.
+![slide20](https://github.com/user-attachments/assets/f952a088-9c12-46b4-a261-e1ddc9f7bbfb)
+4. **Parity** dùng để kiểm tra lỗi trong UART, theo cơ chế đếm số bit 1 trong dữ liệu truyền đi (data + parity).
+#### Có 2 loại
+ ##### Even parity (chẵn):
+ - Số bit `1` trong dữ liệu (bao gồm cả parity bit) luôn là **chẵn**.
+ - Nếu số bit 1 trong dữ liệu là **lẻ**, parity bit sẽ được set thành `1` để **tổng số bit 1 là _chẵn_**.
+ - Nếu số bit 1 trong dữ liệu **đã chẵn**, parity bit sẽ là `0`.
+vd: 
+data | parity bit | truyền đi (data + parity)|
+|----|------------|----------|
+1010 |  0	  |  10100 |
+1101 |  1	  |  11011 |
+
+ ##### Odd parity (lẻ):
+  - Số bit `1` trong dữ liệu (bao gồm cả parity bit) luôn là **lẻ**.
+  - Nếu số bit 1 trong dữ liệu là **chẵn**, parity bit sẽ được set thành `1` để **tổng số bit 1 là _lẻ_**.
+  - Nếu số bit 1 trong dữ liệu **đã lẻ**, parity bit sẽ là `0`.
+#### VD
+data | parity bit | truyền đi (data + parity)|
+|----|------------|----------|
+1010 |  1	  |  10101 |
+1101 |  0	  |  11010 |
+
+Bên gửi sẽ thêm parity tùy theo cài đặt vào data và truyền đi. Bên nhận sẽ nhận data + parity bit, sau đó kiểm tra số lượng bit `1` **trong toàn bộ dữ liệu _(bao gồm parity)_** khớp với parity đã đặt (even/odd) hay không, nếu không thì báo lỗi.
+
+***Nhược điểm***: Không phát hiện được lỗi nhiều bit.
+
+5. **Stop bit** tùy cấu hình 1-2 stop bits, MCU A đưa Tx: `0->1` xong delay thời gian 1 bit. MCU B đọc Rx, delay chờ Rx ổn định rồi khi thấy Rx = 1 thì tiến hành stop.
+![slide22](https://github.com/user-attachments/assets/6c5dc65a-0b05-4226-ae9c-a11c39eaf40d)
+
+---
 
 
 </p>

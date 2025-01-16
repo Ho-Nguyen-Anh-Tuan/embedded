@@ -22,12 +22,18 @@ Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
 D:\Hala_Academy\Embedded\Bt_embedded\Bai3_BlinkLed_Timer\MDK\BlinkLed_Timer.uvprojx
-Project File Date:  01/06/2025
+Project File Date:  01/13/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V6.22', folder: 'D:\Studying_SoftWare\KeilC\Keil_v5\ARM\ARMCLANG\Bin'
-Build target 'Target_1'
+Rebuild target 'Target_1'
+assembling startup_stm32f10x_md.s...
+compiling misc.c...
 compiling main.c...
+compiling system_stm32f10x.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_tim.c...
 linking...
 Program Size: Code=1952 RO-data=252 RW-data=0 ZI-data=1632  
 ".\Objects\BlinkLed_Timer.axf" - 0 Error(s), 0 Warning(s).
@@ -62,17 +68,17 @@ Package Vendor: Keil
    * Component: ARM::CMSIS:CORE@6.1.0
 
    * Component: Keil::Device:Startup@1.0.0
-      Source file:   Device/Source/ARM/STM32F1xx_OPT.s
-      Source file:   Device/Source/system_stm32f10x.c
       Source file:   Device/Source/ARM/startup_stm32f10x_md.s
+      Source file:   Device/Source/system_stm32f10x.c
+      Source file:   Device/Source/ARM/STM32F1xx_OPT.s
       Include file:  RTE_Driver/Config/RTE_Device.h
 
    * Component: Keil::Device:StdPeriph Drivers:Framework@3.6.0
-      Include file:  Device/StdPeriph_Driver/inc/misc.h
       Source file:   Device/StdPeriph_Driver/src/misc.c
       Source file:   Device/StdPeriph_Driver/templates/stm32f10x_conf.h
-      Include file:  Device/StdPeriph_Driver/templates/stm32f10x_it.h
+      Include file:  Device/StdPeriph_Driver/inc/misc.h
       Source file:   Device/StdPeriph_Driver/templates/stm32f10x_it.c
+      Include file:  Device/StdPeriph_Driver/templates/stm32f10x_it.h
 
    * Component: Keil::Device:StdPeriph Drivers:GPIO@3.6.0
       Include file:  Device/StdPeriph_Driver/inc/stm32f10x_gpio.h
@@ -83,9 +89,9 @@ Package Vendor: Keil
       Include file:  Device/StdPeriph_Driver/inc/stm32f10x_rcc.h
 
    * Component: Keil::Device:StdPeriph Drivers:TIM@3.6.0
-      Include file:  Device/StdPeriph_Driver/inc/stm32f10x_tim.h
       Source file:   Device/StdPeriph_Driver/src/stm32f10x_tim.c
-Build Time Elapsed:  00:00:00
+      Include file:  Device/StdPeriph_Driver/inc/stm32f10x_tim.h
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>
