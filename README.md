@@ -503,6 +503,28 @@ Timer là một mạch digital logic có vai trò đếm các chu kỳ xung cloc
 - **Up:** Từ 0 đến giá trị `Period`.
 - **Down:** Từ giá trị `Period` về 0.
 
+#### Code
+```c
+// Cau hinh Timer
+void TIM_Config(){
+	TIM_TimeBaseInitTypeDef TIM_InitStruct;
+	
+	// Goal: count up 1 every 0.1ms
+	TIM_InitStruct.TIM_ClockDivision = TIM_CKD_DIV1; // xung clock mcu : 1 = 72MHz
+	TIM_InitStruct.TIM_Prescaler = 7200 - 1;	// 0,1ms count++
+	TIM_InitStruct.TIM_Period = 0xFFFF;
+	TIM_InitStruct.TIM_CounterMode = TIM_CounterMode_Up;
+	
+	TIM_TimeBaseInit(TIM2, &TIM_InitStruct);
+	TIM_Cmd(TIM2, ENABLE);
+}	
+
+void delay_ms(uint32_t TimeDelay){
+	TIM_SetCounter(TIM2, 0);
+	while(TIM_GetCounter(TIM2) < TimeDelay * 10);
+}
+```
+
 
 
 </p>
