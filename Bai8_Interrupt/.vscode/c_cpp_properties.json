@@ -1,0 +1,52 @@
+{
+  "configurations": [
+    {
+      // Tên profile: Đặt tên rõ ràng cho STM32F103
+      "name": "STM32F103",
+      // Danh sách includePath theo thứ tự ưu tiên logic
+      "includePath": [
+        // ======== Layer 1: Thư viện phần cứng ========
+        // 1. Header SPL - Ưu tiên cao nhất cho gợi ý code
+        "D:/Studying_SoftWare/KeilC/Arm/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/StdPeriph_Driver/inc",
+        // 2. CMSIS từ ARM (phiên bản chuẩn) - Quan trọng cho core_cm3.h
+        "D:/Studying_SoftWare/KeilC/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include",
+        // 3. CMSIS từ STM32F1 pack (nếu cần)
+        "D:/Studying_SoftWare/KeilC/Arm/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include",
+        // ======== Layer 2: Toolchain ========
+        "D:/Studying_SoftWare/KeilC/GNU Arm Embedded Toolchain/arm-none-eabi/include",
+        "D:/Studying_SoftWare/KeilC/GNU Arm Embedded Toolchain/arm-none-eabi/include/c++/10.3.1",
+        // ======== Layer 3: Project code ========
+        "${workspaceFolder}/User",
+        "${workspaceFolder}/User/inc",
+        "${workspaceFolder}/User/src"
+      ],
+      // Define macro - Thêm 2 define quan trọng
+      "defines": [
+        "USE_STDPERIPH_DRIVER", // Kích hoạt SPL
+        "STM32F10X_MD", // Medium Density
+        "__GNUC__", // Toolchain GNU
+        "__CC_ARM" // Giả lập Keil (QUAN TRỌNG)
+      ],
+      // Compiler config
+      "compilerPath": "D:/Studying_SoftWare/KeilC/GNU Arm Embedded Toolchain/bin/arm-none-eabi-gcc.exe",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-arm",
+      // Cấu hình browse - Tối ưu cho F12
+      "browse": {
+        "path": [
+          "${workspaceFolder}/User",
+          "${workspaceFolder}/User/inc",
+          // Source SPL cho F12 vào .c
+          "D:/Studying_SoftWare/KeilC/Arm/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/StdPeriph_Driver/src",
+          // CMSIS ARM core
+          "D:/Studying_SoftWare/KeilC/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include",
+          // STM32 device headers
+          "D:/Studying_SoftWare/KeilC/Arm/Packs/Keil/STM32F1xx_DFP/2.4.1/Device/Include"
+        ],
+        "limitSymbolsToIncludedHeaders": false // Bắt buộc để đọc symbol từ .c
+      }
+    }
+  ],
+  "version": 4
+}

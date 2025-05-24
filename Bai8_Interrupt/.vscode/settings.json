@@ -1,0 +1,59 @@
+{
+  // Cho phép IntelliCode tự động điều chỉnh thứ tự gợi ý
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  // Bật IntelliSense engine của Microsoft C/C++
+  "C_Cpp.intelliSenseEngine": "default",
+  // Tự động hoàn thiện và thêm dấu ngoặc cho hàm
+  "C_Cpp.autocomplete": "default",
+  "C_Cpp.autocompleteAddParentheses": true,
+  // Tắt gợi ý snippet không cần thiết
+  "C_Cpp.suggestSnippets": false,
+  // Ưu tiên parsing triệt để cho workspace lớn
+  "C_Cpp.workspaceParsingPriority": "high",
+  "C_Cpp.errorSquiggles": "enabled", // Bật cảnh báo lỗi include và syntax
+  // Gợi ý nhanh khi gõ, chỉ gợi ý code relevant
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  // Ưu tiên hiển thị đầu tiên theo recently used + prefix
+  "editor.suggest.filterGraceful": false,
+  "editor.suggestSelection": "recentlyUsedByPrefix",
+  // Chỉ hiển thị các loại symbol cần thiết
+  "editor.suggest.showFunctions": true, // Hàm
+  "editor.suggest.showMethods": true, // Method
+  "editor.suggest.showVariables": true, // Biến và typedef
+  "editor.suggest.showConstants": true, // Macro, enum
+  "editor.suggest.showStructs": true, // Struct/union
+  "editor.suggest.showSnippets": true, // bật snippet
+  "editor.suggest.showKeywords": true, // Tắt từ khóa ngôn ngữ
+  // Tự động format khi gõ và lưu
+  "editor.formatOnType": false,
+  "editor.formatOnSave": false,
+  // Tab completion để chọn suggestion
+  "editor.tabCompletion": "on",
+  // Tắt gợi ý từ các từ trong document
+  "editor.wordBasedSuggestions": "off",
+  "editor.acceptSuggestionOnEnter": "on",
+  // Ẩn thư mục và file build không cần thiết
+  "files.exclude": {
+    "**/MDK-ARM": true,
+    "**/*.uvprojx": true,
+    "**/*.uvoptx": true,
+    "**/*.o": true,
+    "**/*.d": true
+  },
+  // Bắt VS Code hiểu đúng file C/C++ của STM32
+  "files.associations": {
+    "*.h": "c",
+    "*.c": "c",
+    "stm32f10x*.h": "c",
+    "core_cm3.h": "c",
+    "system_stm32f10x.h": "c"
+  },
+  "vsintellicode.java.completionsEnabled": false,
+  "vsintellicode.python.completionsEnabled": false,
+  "vsintellicode.sql.completionsEnabled": false,
+  "vsintellicode.typescript.completionsEnabled": false
+}
