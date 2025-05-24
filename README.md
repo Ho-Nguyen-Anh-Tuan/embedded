@@ -650,6 +650,262 @@ Bên gửi sẽ thêm parity tùy theo cài đặt vào data và truyền đi. B
 </p>
 </details>
 
+<details><summary>Unit 5: SPI Hardware & Software</summary>
+<p>
+
+## Unit 5: SPI Software & Hardware
+
+### 1. SPI Software
+SPI có thể được mô phỏng bằng phần mềm bằng cách sử dụng kĩ thuật `Bit banging`, trong đó ta điều khiển trực tiếp các chân GPIO để thực hiện giao tiếp SPI.
+
+### 2. SPI Hardware
+SPI có thể được sử dụng với phần cứng bằng cách cấu hình các chân GPIO ở chế độ phù hợp.
+
+#### 2.1. Định nghĩa chân SPI1
+Sử dụng SPI1 với các chân từ PA4 đến PA7:
+```c
+#define SPI1_NSS    GPIO_Pin_4
+#define SPI1_SCK    GPIO_Pin_5
+#define SPI1_MISO   GPIO_Pin_6
+#define SPI1_MOSI   GPIO_Pin_7
+#define SPI1_GPIO   GPIOA
+```
+
+#### 2.2. Cấu hình GPIO cho SPI
+Các chân được cấu hình ở chế độ `Alternative Function` để sử dụng với SPI.
+```c
+void GPIO_Config(){
+    GPIO_InitTypeDef GPIO_InitStruct;
+    
+    GPIO_InitStruct.GPIO_Pin = SPI1_NSS | SPI1_SCK | SPI1_MOSI | SPI1_MISO;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
+    
+    GPIO_Init(SPI1_GPIO, &GPIO_InitStruct);
+}
+```
+
+#### 2.3. Cấu hình SPI
+Một số thông số quan trọng cần thiết khi cấu hình SPI:
+- `SPI_Mode`: Master hoặc Slave.
+- `SPI_Direction`: Kiểu truyền dữ liệu.
+- `SPI_BaudRatePrescaler`: Chia tần số hệ thống cấp cho bộ SPI.
+- `SPI_CPOL` và `SPI_CPHA`: Thiết lập chế độ truyền dữ liệu.
+- `SPI_DataSize`: Số lượng bit dữ liệu truyền.
+- `SPI_FirstBit`: Chọn bit truyền trước (MSB/LSB).
+- `SPI_NSS`: Chế độ điều khiển chân NSS (bằng phần mềm hoặc phần cứng).
+
+### 3. Giao tiếp SPI
+#### 3.1. Gửi dữ liệu qua SPI
+```c
+void SPI_Send1Byte(uint8_t data){
+    GPIO_ResetBits(SPI1_GPIO, SPI1_NSS); // Kéo chân NSS xuống thấp
+    while(SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET){} // Chờ bộ đệm trống
+    SPI_I2S_SendData(SPI1, data); // Gửi dữ liệu
+    while(SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) == SET){} // Chờ SPI hoàn tất
+    GPIO_SetBits(SPI1_GPIO, SPI1_NSS); // Đưa chân NSS lên cao
+}
+```
+
+#### 3.2. Nhận dữ liệu từ SPI
+```c
+uint8_t SPI_Receive1Byte(void){
+    while(SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_RXNE) == RESET); // Chờ dữ liệu nhận
+    uint8_t temp = (uint8_t)SPI_I2S_ReceiveData(SPI1); // Đọc dữ liệu
+    while(SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) == SET); // Chờ SPI hoàn tất
+    return temp;
+}
+```
+
+#### 3.3. Lưu ý khi sử dụng SPI
+- Trước khi gửi dữ liệu, cần kiểm tra bộ đệm truyền trống (`SPI_I2S_FLAG_TXE`).
+- Sau khi gửi, chờ SPI hoàn tất (`SPI_I2S_FLAG_BSY`).
+- Khi nhận dữ liệu, kiểm tra cờ `SPI_I2S_FLAG_RXNE` để đảm bảo có dữ liệu hợp lệ.
+- Hàm nhận dữ liệu trả về 16 bit nên cần ép kiểu nếu chỉ nhận 8 bit.
+
+---
+## Assignment
+
+[SPI Full Duplex Hardware](https://youtu.be/D1cyY_js2hg)  
+[SPI Master to Slave Hardware](https://youtu.be/WNUmPQyqUfA)  
+[SPI Full Duplex Software](https://youtu.be/3aZ7i4stsKU)  
+[SPI Master to Slave Software](https://youtu.be/H0mFDmBM1RY)
+
+</p>
+</details>
+
+<details><summary>Unit 6: I2C Software & Hardware</summary>
+<p>
+
+
+</p>
+</details>
+
+<details><summary>Unit 7: UART Software & Hardware</summary>
+<p>
+
+
+</p>
+</details>
+
+<details><summary>Unit 8: Interrupt</summary>
+<p>
+
+# Unit 8: Interrupt
+
+Interrupt (Ngắt) cho phép chương trình phản hồi với các sự kiện xảy ra bất ngờ từ bên ngoài hoặc bên trong vi điều khiển mà không cần liên tục kiểm tra trạng thái. Khi xảy ra ngắt, CPU sẽ tra cứu bảng vector, nhảy đến hàm xử lý tương ứng (ISR), thực thi và sau đó quay lại tiếp tục chương trình chính.
+
+---
+
+## 🔌 1. Ngắt Ngoài (External Interrupt)
+
+### Cơ chế hoạt động:
+
+* Khi xảy ra ngắt ngoài, CPU tra bảng vector.
+* Các giá trị đầu tiên trong bảng:
+
+  * **MSP**: Con trỏ Stack chính.
+  * **Reset Handler**: Địa chỉ khởi động lại chương trình.
+  * **Các ISR**: Địa chỉ các hàm xử lý ngắt.
+
+### Cấu hình:
+
+1. **Bật clock** cho GPIO liên quan và **AFIO** để định tuyến ngắt.
+2. **Cấu hình chân GPIO** ở chế độ input, có thể thêm pull-up/pull-down tuỳ cạnh kích hoạt.
+3. **Mỗi EXTI line** chỉ liên kết được **1 chân GPIO**.
+
+### Liên kết GPIO với EXTI:
+
+```c
+GPIO_EXTILineConfig(GPIO_PortSourceGPIOx, GPIO_PinSourcex);
+```
+
+### Cấu hình bằng `EXTI_InitTypeDef`:
+
+* `EXTI_Line`: EXTI line cần cấu hình (0-15).
+* `EXTI_Mode`: Interrupt hoặc Event.
+* `EXTI_Trigger`: Cạnh kích hoạt (rising/falling/both).
+
+### NVIC (Nested Vectored Interrupt Controller):
+
+* Quản lý ưu tiên và xử lý nhiều ngắt.
+* **Priority Group** chia các mức ưu tiên:
+
+  * `Preemption Priority`: Ưu tiên chính.
+  * `Subpriority`: Ưu tiên phụ nếu cùng mức Preemption.
+
+```c
+NVIC_PriorityGroupConfig(uint32_t PriorityGroup);
+```
+
+### Cấu hình bằng `NVIC_InitTypeDef`:
+
+* `NVIC_IRQChannel`: Kênh ngắt.
+* `NVIC_IRQChannelPreemptionPriority`: Ưu tiên chính.
+* `NVIC_IRQChannelSubPriority`: Ưu tiên phụ.
+* `NVIC_IRQChannelCmd`: ENABLE/DISABLE.
+
+### Vector tương ứng:
+
+| EXTI Line | Vector ISR               |
+| --------- | ------------------------ |
+| 0 - 4     | EXTIx\_IRQHandler()      |
+| 5 - 9     | EXTI9\_5\_IRQHandler()   |
+| 10 - 15   | EXTI15\_10\_IRQHandler() |
+
+### Mẫu hàm ISR:
+
+```c
+void EXTI0_IRQHandler() {
+    if (EXTI_GetITStatus(EXTI_Line0) == SET) {
+        // do something
+    }
+    EXTI_ClearITPendingBit(EXTI_Line0);
+}
+```
+
+---
+
+## ⏱ 2. Ngắt Timer
+
+### Cấu hình:
+
+* Sử dụng `TIM_TimeBaseInitTypeDef` để cài đặt Timer.
+* `TIM_Period`: Xác định thời điểm tạo ngắt (ví dụ: 10 - 1 tương ứng với 1ms).
+* Kích hoạt ngắt bằng:
+
+```c
+TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
+```
+
+* Cấu hình NVIC tương tự EXTI.
+* ISR có tên: `TIMx_IRQHandler()`
+
+### Mẫu ứng dụng:
+
+```c
+void delay_ms(uint32_t time) {
+    uint32_t start_time = TIM2_Counter;
+    while ((TIM2_Counter - start_time) < time) {
+        // wait
+    }
+}
+
+void TIM2_IRQHandler() {
+    if (TIM_GetITStatus(TIM2, TIM_IT_Update) == SET) {
+        TIM2_Counter++;
+        TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+    }
+}
+```
+
+---
+
+## 📡 3. Ngắt Truyền Thông (USART Interrupt)
+
+### Cấu hình:
+
+* Cài đặt UART bình thường.
+* Kích hoạt ngắt bằng:
+
+```c
+USART_ITConfig(USARTx, USART_IT_RXNE, ENABLE);
+```
+
+* Cấu hình NVIC tương ứng.
+* ISR tên: `USARTx_IRQHandler()`
+
+### Mẫu ISR:
+
+```c
+void USART1_IRQHandler() {
+    if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET) {
+        UART_data = USART_ReceiveData(USART1);
+
+        GPIO_WriteBit(GPIOC, GPIO_Pin_13, !GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_13));
+
+        // chờ DR trống
+        while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+        USART_SendData(USART1, UART_data);
+
+        // chờ gửi xong
+        while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+
+        USART_ClearITPendingBit(USART1, USART_IT_RXNE);
+    }
+}
+```
+
+</p>
+</details>
+
+<details><summary>Unit</summary>
+<p>
+
+
+</p>
+</details>
+
 <details><summary>Unit</summary>
 <p>
 
